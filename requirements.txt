@@ -1,10 +1,11 @@
-setuptools>=65.5.0  # distutils 의존성 해결
+setuptools>=65.5.0  # distutils 문제 해결을 위해 추가
+wheel>=0.38.4  # 패키지 빌드 및 설치 지원
 streamlit==1.18.1
 pandas==2.1.1
 numpy==1.24.4
-opencv-python-headless==4.6.0.66
+opencv-python-headless==4.6.0.66  # GUI 없는 OpenCV 설치
 pytesseract==0.3.10
 fpdf==1.7.2
 scikit-learn==1.3.0
-tensorflow-cpu==2.10.0
+tensorflow-cpu==2.10.0  # CPU 전용 TensorFlow 사용
 matplotlib==3.7.2
