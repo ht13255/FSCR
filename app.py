@@ -1,3 +1,4 @@
+# 파일: app.py
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -37,7 +38,8 @@ def analyze_past_game_trends(past_games):
     consistency = df.std().to_dict()
     return avg_stats, consistency, df
 
-# 3. 머신러닝 모델로 장단점 분석
+# 3. 머신러닝 모델로 장단점 분석 (RandomForestClassifier 병렬 처리 적용)
+@st.cache
 def analyze_strengths_weaknesses(avg_stats):
     df = pd.DataFrame([avg_stats])
     features = ['goals', 'xG', 'xA', 'assists', 'shots', 'shot_accuracy',
@@ -49,8 +51,9 @@ def analyze_strengths_weaknesses(avg_stats):
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
 
-    rf = RandomForestClassifier(n_estimators=100, random_state=42)
-    y = np.random.choice([0, 1], size=(len(df),))  # 예시 레이블
+    # RandomForestClassifier에서 병렬 처리 활성화 (n_jobs=-1)
+    rf = RandomForestClassifier(n_estimators=50, random_state=42, n_jobs=-1)
+    y = np.random.choice([0, 1], size=(len(df),))
     rf.fit(X_scaled, y)
     importance = rf.feature_importances_
 
@@ -59,7 +62,8 @@ def analyze_strengths_weaknesses(avg_stats):
 
     return strengths, weaknesses
 
-# 4. 딥러닝 모델로 플레이 스타일 분석
+# 4. 딥러닝 모델로 플레이 스타일 분석 (에포크 수 및 배치 크기 최적화)
+@st.cache
 def analyze_play_style(avg_stats):
     df = pd.DataFrame([avg_stats])
     features = ['goals', 'xG', 'assists', 'shots', 'dribble_success_rate', 
@@ -76,8 +80,9 @@ def analyze_play_style(avg_stats):
 
     model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
+    # 에포크 수를 3으로 줄이고, 배치 크기를 128로 늘림
     y = np.random.choice([0, 1, 2], size=(len(df),))
-    model.fit(X_scaled, y, epochs=10, batch_size=32, verbose=0)
+    model.fit(X_scaled, y, epochs=3, batch_size=128, verbose=0)
 
     play_style_prediction = np.argmax(model.predict(X_scaled), axis=1)[0]
     play_styles = {0: "공격적", 1: "수비적", 2: "밸런스"}
